@@ -25,10 +25,68 @@ public:
 		
 	}
 	~CJugador();
+	Rectangle retornarRectangulo() {
+		return Rectangle(x + 2 * 3 + dx, y + 15 * 3, (ancho - 4) * 3, (alto - 15) * 3);
+	}
+	int getVidas() { return vidas;}
+	int getX() { return x+2*3;}
+	int getY() {return y+15*3+dy;}
+	void setVidas(int v) {
+		vidas = v;
+	}
+	void setDX(int dx) {
+		this->dx = dx;
+	}
+	void setDY(int dy) {
+		this->dy = dy;
+	}
 	void setDireccion(Direcciones direccion){
 		this->direccion = direccion;
 	}
+	
+	void ValidadMovimiento(int** matriz) {
+		int X, Y = 0;
+		for (int i = 0; i < filas; i++) {
+			X = 0;
+			for (int j = 0; j < columnas; j++) {
+				Rectangle c1 = Rectangle(X, Y, 50, 50);
+				if (matriz[i][j] == 1 || matriz[i][j] == 3) {
+					if (CDI.IntersectsWith(c1))dx = 0;
+					if (CAA.IntersectsWith(c1))dy = 0;
+				}
+				X += 50;
+			}
+			Y += 50;
+		}
+	}
+	void disminuirvidas() {
+		x = 50;
+		y = 0;
+		vidas--;
+	}
+	void disminuirvidas(int PuntaIzquierda, int PuntaDerecha, int CentroInicioY, int CentroFinalY, int PuntaSuperior, int PuntaInferior, int CentroInicioX, int CentroFinalX) {
+		if (getY() >= PuntaSuperior && getY() <= PuntaInferior && getX() >= CentroInicioX && getX() <= CentroFinalX) {
+			x = 50;
+			y = 0;
+			vidas--;
+		}
+		if (getX() >= PuntaIzquierda && getX() <= PuntaDerecha && getY() >= CentroInicioY && getY() <= CentroFinalY) {
+
+			x = 50;
+			y = 0;
+			vidas--;
+		}
+			
+	}
 	void dibujarJugador(Graphics^g, Bitmap^bmpJugador){
+		CDI = Rectangle(x + 2 * 3 + dx, y + 15 * 3, (ancho - 4) * 3, (alto - 15) * 3);
+		g->DrawRectangle(Pens::Transparent, CDI);
+		
+		CAA = Rectangle(x + 2 * 3, y + 15 * 3 + dy, (ancho - 4) * 3, (alto - 15) * 3);
+		g->DrawRectangle(Pens::Transparent, CAA);
+
+		ValidadMovimiento(matriz);
+		
 		Rectangle PorcionAUsar = Rectangle(indiceX*ancho, indiceY*alto, ancho*3, alto*3);
 		Rectangle Aumento = Rectangle(x,y,ancho,alto);
 		g->DrawImage(bmpJugador, Aumento, Porcionar, GraphicsUnit::Pixel);
@@ -108,7 +166,17 @@ public:
 		
 		dibujarJugador(g, bmpJugador);
 		
+		}
+		int getAcelerar() {
+		return acelerar;
 	}
+	void setAcelerar(int v) {
+		acelerar = v;
+	}
+	Direcciones getDireccion() {
+		return direccion;
+	}
+	
 private:
 	int x;
 	int y;
@@ -118,8 +186,13 @@ private:
 	int alto;
 	int indiceX;
 	int indiceY;
+	int vidas;
+	int acelerar;
 	Direcciones direccion;
 	Direcciones ultima;
+
+	Rectangle CDI;
+	Rectangle CAA;
 	
 };
 
