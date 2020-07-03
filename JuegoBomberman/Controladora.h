@@ -1,38 +1,154 @@
 #ifndef __CONTROLADORA_H__
 #define __CONTROLADORA_H__
+#include "Escenario.h"
+#include "Jugador.h"
+#include "ArrBombas.h"
+#include "ArrMejoras.h"
+#include "ArrEnemigos.h"
 
-#include "mapa.h"
-#include "jugador.h"
- 
-class CControladora{
+class CControladora
+{
 public:
-	CControladora(){
+	CControladora() {
 		oEscenario = new CEscenario();
 		oJugador = new CJugador(50, 50);
+		oArrBombas = new CArrBombas();
+		oArrMejoras = new CArrMejoras();
+		oArrEnemigos = new CArrEnemigos();
+		nivel = 1;
+		habilidad = false;
 	}
-	 
-	~CControladora(){}
-	
-	void cambiarNivel(){
+	~CControladora() {}
+	void CambiarNivel() {
 		oEscenario->generarMatriz();
 	}
-	
-	void dibujar(Graphics^g, Bitmap^bmpBase, Bitmap^bmpSolido, Bitmap^bmpDestruible, Bitmap^bmpJugador){
-		oEscenario->pintarBase(g, bmpBase);
-		oEscenario->generarMatriz(g, bmpDestruible);
-		oJugador->moverJugador(g, bmpJugador);
-					
+	void agregarBomba() {
+		oArrBombas->crear_una_bomba(oJugador->getX(), oJugador->getY());
 	}
-	CJugador *getoJugador(){
+	void disminuir_Vidas_Por_Enemigo() {
+		for (int i = 0; i < oArrEnemigos->getarregloEnemigos().size(); i++) {
+			if (oJugador->retornarRectangulo().IntersectsWith(oArrEnemigos->getarregloEnemigos().at(i)->retornarRectangulo())) {
+				oJugador->disminuirvidas();
+			}
+
+		}
+	}
+	void disminuir_vidas_Por_Bomba() {
+		int PuntaIzquierda, PuntaDerecha, CentroInicioY, CentroFinalY, PuntaSuperior, PuntaInferior, CentroInicioX, CentroFinalX;
+		for (int i = 0; i < oArrBombas->getarregloBombas().size(); i++)
+		{
+			PuntaIzquierda = oArrBombas->getarregloBombas().at(i)->getX() - 100;
+			PuntaDerecha = oArrBombas->getarregloBombas().at(i)->getX() + 150;
+			PuntaSuperior = oArrBombas->getarregloBombas().at(i)->getY() - 100;
+			PuntaInferior = oArrBombas->getarregloBombas().at(i)->getY() + 150;
+			CentroInicioY = oArrBombas->getarregloBombas().at(i)->getY();
+			CentroInicioX = oArrBombas->getarregloBombas().at(i)->getX();
+			CentroFinalX = oArrBombas->getarregloBombas().at(i)->getX()+50;
+			CentroFinalY = oArrBombas->getarregloBombas().at(i)->getY() + 50;
+
+			if(oArrBombas->getarregloBombas().at(i)->getEstado() == Estado::explosion) {
+					oJugador->disminuirvidas(PuntaIzquierda, PuntaDerecha, CentroInicioY, CentroFinalY, PuntaSuperior, PuntaInferior, CentroInicioX, CentroFinalX);
+			}
+		}
+
+	}
+	void patear() {
+		if (habilidad == true) {
+			for (int i = 0; i < oArrBombas->getarregloBombas().size(); i++)
+			{
+				if (oArrBombas->getarregloBombas().at(i)->getEstado() == Estado::normal && oJugador->retornarRectangulo().IntersectsWith(oArrBombas->getarregloBombas().at(i)->getRectangulo()))
+				{
+					if (oJugador->getDireccion() == Direcciones::Abajo && oEscenario->getValue((oArrBombas->getarregloBombas().at(i)->getY() + 50) / 50, (oArrBombas->getarregloBombas().at(i)->getX()) / 50) == true) {
+						oArrBombas->getarregloBombas().at(i)->sety(oArrBombas->getarregloBombas().at(i)->getY() + 50);
+						oArrBombas->getarregloBombas().at(i)->settiempo(0);
+					}
+					if (oJugador->getDireccion() == Direcciones::Arriba && oEscenario->getValue((oArrBombas->getarregloBombas().at(i)->getY() - 50) / 50, (oArrBombas->getarregloBombas().at(i)->getX()) / 50) == true) {
+						oArrBombas->getarregloBombas().at(i)->sety(oArrBombas->getarregloBombas().at(i)->getY() - 50);
+						oArrBombas->getarregloBombas().at(i)->settiempo(0);
+					}
+					if (oJugador->getDireccion() == Direcciones::Derecha && oEscenario->getValue((oArrBombas->getarregloBombas().at(i)->getY()) / 50, (oArrBombas->getarregloBombas().at(i)->getX() + 50) / 50) == true) {
+						oArrBombas->getarregloBombas().at(i)->setx(oArrBombas->getarregloBombas().at(i)->getX() + 50);
+						oArrBombas->getarregloBombas().at(i)->settiempo(0);
+					}
+					if (oJugador->getDireccion() == Direcciones::Izquierda && oEscenario->getValue((oArrBombas->getarregloBombas().at(i)->getY()) / 50, (oArrBombas->getarregloBombas().at(i)->getX() - 50) / 50) == true) {
+						oArrBombas->getarregloBombas().at(i)->setx(oArrBombas->getarregloBombas().at(i)->getX() - 50);
+						oArrBombas->getarregloBombas().at(i)->settiempo(0);
+					}
+				}
+			}
+		}
+	}
+	void agarrarMejoras() {
+		for (int i = 0; i < oArrMejoras->getvector_mejoras().size(); i++)
+		{
+			if (oJugador->retornarRectangulo().IntersectsWith(oArrMejoras->getvector_mejoras().at(i)->devolverR()))
+			{
+				switch (oArrMejoras->getvector_mejoras().at(i)->getTipo_de_mejora())
+				{
+				case 1://Agregar una bomba
+					oArrBombas->setBombas(oArrBombas->getBombas() + 1);
+					break;
+				case 2://Mover una bomba
+					habilidad = true;
+					break;
+				
+				case 3://Calavera
+					oJugador->setVidas(oJugador->getVidas() - 1);
+					break;
+				case 4://Patines
+					oJugador->setAcelerar(oJugador->getAcelerar() + 3);
+					break;
+							
+				case 5://Vidas
+					oJugador->setVidas(oJugador->getVidas() + 1);
+					break;
+				default:
+					break; 
+				}
+				oArrMejoras->eliminarenpos(i);
+			}
+		}
+	}
+	void dibujar(Graphics^ g, Bitmap^ bmpBase, Bitmap^ bmpSolido, Bitmap^ bmpBomba, Bitmap^ bmpExplosion, Bitmap^ bmpDestruible, Bitmap^ bmpJugador, Bitmap^ bmpMejoras, Bitmap^ bmpEnemigo) {
+		oEscenario->PintarBase(g, bmpBase);
+		//oArrMejoras->dibujar(g, bmpMejoras, oEscenario->getmatriz());
+		oEscenario->PintarMatriz(g, bmpSolido, bmpDestruible);
+		oArrMejoras->dibujar(g, bmpMejoras, oEscenario->getmatriz());
+		oJugador->moverJugador(g, bmpJugador, oEscenario->getmatriz());
+		oArrBombas->dibujar_una_bomba(g, bmpBomba, bmpExplosion, oJugador->getX(), oJugador->getY(), oEscenario->getmatriz());
+		oArrEnemigos->dibujar(g, bmpEnemigo, oEscenario->getmatriz());
+		disminuir_vidas_Por_Bomba();
+		disminuir_Vidas_Por_Enemigo();
+		agarrarMejoras();
+		patear();
+	}
+	void crear_enemigos_y_mejoras() {
+		oArrEnemigos->crearEnemigos();
+		oArrMejoras->crearMejoras();
+	}
+	CJugador *getoJugador() {
 		return oJugador;
 	}
+	
 
+	CArrMejoras *getoArrMejoras() {
+		return oArrMejoras;
+	}
+	CArrEnemigos* getoArrEnemigos() {
+		return oArrEnemigos;
+	}
+	int getNivel() {
+		return nivel;
+	}
+	
 private:
 	CEscenario *oEscenario;
 	CJugador *oJugador;
-	
+	CArrBombas *oArrBombas;
+	CArrMejoras *oArrMejoras;
+	CArrEnemigos *oArrEnemigos;
+	int nivel;
+	bool habilidad;
 };
 
-
-
-#endif
+#endif //! __CONTROLADORA_H__
