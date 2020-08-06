@@ -1,79 +1,47 @@
-#ifndef __ENEMIGO_H__
-#define __ENEMIGO_H__
-#include <ctime>
-#include <cstdlib>
+#pragma once
 using namespace System::Drawing;
-enum Estado_Enemigo{Eliminado, Normal};
 
 class CEnemigo
 {
-public:
-	CEnemigo(){
-		srand(time(NULL));
-		i = rand() % 13 + 1;//13
-		j = rand() % 13 + 2;//14
-		x = 715;
-		y = 650;
-		dx = 5;
-		indiceX = 0;
-		indiceY = 0;
-		ancho = 96 / 6;
-		alto = 16;
-		ubicado = false;
-		estado = Normal;
-	}
-	~CEnemigo(){}
-	void dibujar(Graphics^ g, Bitmap^ bmpEnemigo, int** matriz) {
-		Rectangle porcionAUsar = Rectangle(indiceX * ancho, indiceY * alto, ancho, alto);
-		while ((matriz[i][j-1]!=2 || matriz[i][j]!=2 || matriz[i][j+1]!=2) && i<14 && ubicado==false ) {
-			j++;
-			if (j == 15) {
-				i++;
-				j = 0;
-			}
-			if (i >= 14) break;
-			x = j * 50;
-			y = i * 50;
-		}
-		Rectangle Aumento = Rectangle(x, y, 40, 40);
-		g->DrawImage(bmpEnemigo, Aumento, porcionAUsar, GraphicsUnit::Pixel);
-		ubicado = true;
-		x += dx;
-		if ((matriz[y / 50][(x + 50) / 50] == 3 || matriz[y / 50][(x + 50) / 50] == 1) || (matriz[y / 50][(x - 10) / 50] == 3 || matriz[y / 50][(x - 10) / 50] == 1)) {
-			dx *= -1;
-		}
-	}
-	void animar() {
-		if (indiceX >= 0 && indiceX < 5) {
-			indiceX++;
-		}
-		if (indiceX == 5) {
-			while (indiceX != 0) {
-				indiceX--;
-			}
-		}
-	}
-	Rectangle retornarRectangulo() {
-		return Rectangle(x, y, 50, 50);
-	}
 private:
+
+	int xM;
+	int yM;
 	int x;
 	int y;
-
-	int i; //filas
-	int j; //columnas
-
 	int dx;
-
+	int dy;
+	int dxM;
+	int dyM;
+	int contador;
+	bool muerto;
+	//Animacion
 	int indiceX;
 	int indiceY;
+	int Ancho;
+	int Alto;
 
-	int ancho;
-	int alto;
+public:
 
-	bool ubicado;
+	CEnemigo(int xM, int yM);
+	~CEnemigo();
 
-	Estado_Enemigo estado;
+	int Get_xM();
+	int Get_yM();
+	int Get_x();
+	int Get_y();
+	int Get_dx();
+	int Get_dy();
+	bool Get_Muerto();
+
+	void Set_xM(int value);
+	void Set_yM(int value);
+	void Set_x(int value);
+	void Set_y(int value);
+	void Set_dx(int value);
+	void Set_dy(int value);
+	void Set_Muerto(bool value);
+
+	void Mover(int** matriz);
+	void Dibujar(BufferedGraphics^ buffer, int** matriz, Bitmap^ bmpEnemigo);
 };
-
-#endif // !__ENEMIGO_H__
