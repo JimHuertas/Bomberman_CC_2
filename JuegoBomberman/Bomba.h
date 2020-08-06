@@ -1,179 +1,39 @@
-#ifndef __BOMBA_H__
-#define __BOMBA_H__
+#pragma once
+#include "Escenario.h"
 using namespace System::Drawing;
-enum Estado { normal, explosion, desaparecer };
+using namespace std;
+using namespace System;
+
 
 class CBomba
 {
 public:
-	CBomba(int x, int y) {
-		this->x = x;
-		this->y = y;
-		estado = Estado::normal;
-
-		ancho = 66 / 3;
-		alto = 24;
-
-		indiceX = 0;
-		tiempo_antes_de_explotar = 0;
-
-
-		//Explosion(datos iniciales)
-		indiceEX = 0;
-		indiceEY = 0;
-		altoExplosion = 160 / 8;
-		anchoExplosion = 80/ 4;
-	}
-	~CBomba() {}
-	Rectangle getRectangulo() {
-		return Rectangle(x, y, 40, 40);
-	}
-	bool validarLugar(int xJugador, int yJugador, int** matriz) {
-		if (matriz[yJugador / 50][xJugador / 50] == 0 || matriz[yJugador / 50][xJugador / 50] == 2)
-			return true;
-		else
-			return false;
-	}
-	void dibujarBomba(Graphics^ g, Bitmap^ bmpBomba, int xJugador, int yJugador, int** matriz) {
-		if (validarLugar(xJugador, yJugador, matriz) == true) //a que no está en un bloque fijo entonces puede poner la bomba
-		{
-			Rectangle porcionAUsar = Rectangle(indiceX * ancho, 0, ancho, alto);
-			Rectangle aumento = Rectangle(x, y, 40, 40);
-			g->DrawImage(bmpBomba, aumento, porcionAUsar, GraphicsUnit::Pixel);
-		}
-		if (tiempo_antes_de_explotar == 7) { estado = Estado::explosion; }
-	}
-	void animar() //d el efecto de que la bomba va a explotar, la bomba se dibuja 6 veces antes de relizar la explosión
-	{
-		if (indiceX >= 0 && indiceX < 2)
-			indiceX++;
-		else
-		{
-			tiempo_antes_de_explotar++;
-			indiceX = 0;
-		}
-	}
-	
-	void DibujarExplosion(Graphics^g, Bitmap^ bmpExplosionCentro, int** matriz) {
-
-		Rectangle porcionUsarCentro = Rectangle(indiceEX * anchoExplosion, indiceEY * altoExplosion, anchoExplosion, altoExplosion); // indiceY=0
-		Rectangle centro = Rectangle(x, y, 50, 50);
-		g->DrawImage(bmpExplosionCentro, centro, porcionUsarCentro, GraphicsUnit::Pixel);
-		if (matriz[y / 50][(x - 50) / 50] != 1) //a que no está en un bloque fijo entonces puede poner la bomba
-		{
-			Rectangle porcionUsarIzquierda = Rectangle(indiceEX * anchoExplosion, indiceEY + 2 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 2
-			Rectangle izquierda = Rectangle(x - 50, y, 50, 50);
-			g->DrawImage(bmpExplosionCentro, izquierda, porcionUsarIzquierda, GraphicsUnit::Pixel);
-
-			if (matriz[y / 50][(x - 50) / 50] == 3) { matriz[y / 50][(x - 50) / 50] = 2; }
-		}
-
-
-		if (matriz[y / 50][(x + 50) / 50] != 1) {
-			Rectangle porcionUsarDerecha = Rectangle(indiceEX * anchoExplosion, indiceEY + 4 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 4
-			Rectangle derecha = Rectangle(x + 50, y, 50, 50);
-			g->DrawImage(bmpExplosionCentro, derecha, porcionUsarDerecha, GraphicsUnit::Pixel);
-
-			if (matriz[y / 50][(x + 50) / 50] == 3) { matriz[y / 50][(x + 50) / 50] = 2; }
-
-		}
-		if (matriz[y / 50][(x + 50) / 50] != 1) {
-			Rectangle porcionUsarPuntaDerecha = Rectangle(indiceEX * anchoExplosion, indiceEY + 3 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 3
-			Rectangle Puntaderecha = Rectangle(x + 100, y, 50, 50);
-			g->DrawImage(bmpExplosionCentro, Puntaderecha, porcionUsarPuntaDerecha, GraphicsUnit::Pixel);
-
-			if (matriz[y / 50][(x + 100) / 50] == 3 && matriz[y / 50][(x + 50) / 50] != 1)
-			{
-
-				matriz[y / 50][(x + 100) / 50] = 2;
-			}
-		}
-
-		if (matriz[y / 50][(x - 50) / 50] != 1) {
-			Rectangle porcionUsarPuntaIzquierda = Rectangle(indiceEX * anchoExplosion, indiceEY + 1 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 1
-			Rectangle Puntaizquierda = Rectangle(x - 100, y, 50, 50);
-			g->DrawImage(bmpExplosionCentro, Puntaizquierda, porcionUsarPuntaIzquierda, GraphicsUnit::Pixel);
-
-			if (matriz[y / 50][(x - 100) / 50] == 3 && matriz[y / 50][(x - 50) / 50] != 1)
-			{
-				matriz[y / 50][(x - 100) / 50] = 2;
-			}
-		}
-
-		Rectangle porcionUsarVerticales = Rectangle(indiceEX * anchoExplosion, indiceEY + 6 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 1
-		Rectangle VerticalSuperior = Rectangle(x, y - 50, 50, 50);
-		Rectangle VerticalInferior = Rectangle(x, y + 50, 50, 50);
-
-		if (matriz[(y - 50) / 50][x / 50] != 1) { g->DrawImage(bmpExplosionCentro, VerticalSuperior, porcionUsarVerticales, GraphicsUnit::Pixel); }
-		if (matriz[(y - 50) / 50][x / 50] == 3) { matriz[(y - 50) / 50][x / 50] = 2; }
-		if (matriz[(y + 50) / 50][x / 50] != 1) { g->DrawImage(bmpExplosionCentro, VerticalInferior, porcionUsarVerticales, GraphicsUnit::Pixel); }
-		if (matriz[(y + 50) / 50][x / 50] == 3) { matriz[(y + 50) / 50][x / 50] = 2; }
-
-
-		if (matriz[(y - 50) / 50][x / 50] != 1) {
-			Rectangle porcionUsarPuntaSuperior = Rectangle(indiceEX * anchoExplosion, indiceEY + 5 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 5
-			Rectangle PuntaSuperior = Rectangle(x, y - 100, 50, 50);
-			g->DrawImage(bmpExplosionCentro, PuntaSuperior, porcionUsarPuntaSuperior, GraphicsUnit::Pixel);
-
-			if (matriz[(y - 100) / 50][x / 50] == 3 && matriz[(y - 50) / 50][x / 50] != 1) { matriz[(y - 100) / 50][x / 50] = 2; }
-		}
-
-
-		if (matriz[(y + 50) / 50][x / 50] != 1) {
-			Rectangle porcionUsarPuntaInferior = Rectangle(indiceEX * anchoExplosion, indiceEY + 7 * altoExplosion, anchoExplosion, altoExplosion); //indiceY = 7
-			Rectangle PuntaInferior = Rectangle(x, y + 100, 50, 50);
-			g->DrawImage(bmpExplosionCentro, PuntaInferior, porcionUsarPuntaInferior, GraphicsUnit::Pixel);
-			if (matriz[(y + 100) / 50][x / 50] == 3 && matriz[(y + 50) / 50][x / 50] != 1) {
-				matriz[(y + 100) / 50][x / 50] = 2;
-			}
-		}
-	}
-	void animarExplosion() {
-		if (indiceEX >= 0 && indiceEX < 3)
-			indiceEX++;
-		else {
-			estado = Estado::desaparecer;
-		}
-	}
-	Estado getEstado() {
-		return estado;
-	}
-
-	int getX() {
-		return x;
-	}
-	int getY() {
-		return y;
-	}
-	void setx(int v) {
-		x = v;
-	}
-	void sety(int v) {
-		y = v;
-	}
-	void settiempo(int v) {
-		tiempo_antes_de_explotar = v;
-	}
-
-
-private: //datos de la explosion
-	int indiceEX;
-	int indiceEY;
-
-
-	int altoExplosion;
-	int anchoExplosion;
-
-private: //datos de la bomba
 	int x;
 	int y;
+	//Validacion
+	bool colocar;
+	//Dibujo
+	int Indicex;
+	//Explosion
+	int contador;
+	//Dibujar la exposion
+	int derecha;
+	int izquierda;
+	int arriba;
+	int abajo;
+	int IndiceY_E;
 
-	int ancho;
-	int alto;
-	int indiceX;
-
-	int tiempo_antes_de_explotar;
-
-	Estado estado;
+public:
+	CBomba();
+	~CBomba();
+	bool setColocar(bool colocar) { return(this->colocar = colocar); }
+	int setX(int x) { return(this->x = x); }
+	int setY(int y) { return(this->y = y); }
+	bool getColocar() { return colocar; }
+	int setcontador(int contador) { return(this->contador = contador); }
+	int getContador() { return contador; }
+	void Bomba(BufferedGraphics^ Buffer, Bitmap^ BmpBomba, Bitmap^ BmpDetonar, int** Mapa, CEscenario* oEscenario, CJugador* oJugador, CJugador* oJugador2);
+	void Colision_B(BufferedGraphics^ Buffer, Bitmap^ BmpDetonar, int** Mapa, int i, int j, int X, int Y, int Ancho,
+		int Alto, int x, int y, int IndiceX, CEscenario* oEscenario, CJugador* oJugador, CJugador* oJugador2);
 };
-#endif //! __BOMBA_H__
+
