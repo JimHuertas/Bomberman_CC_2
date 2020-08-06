@@ -1,99 +1,41 @@
-#ifndef _MAPA_H_
-#define _MAPA_H_
+#pragma once
+#include "Mejora.h"
+#include "Enemigo.h"
+#include "Jugador.h"
+#include <fstream>
+#include <sstream>
+#include <vector>
 
-#include <ctime>
-#include <stdlib.h>
-#define filas 15
-#define columnas 15
+using namespace std;
 using namespace System::Drawing;
 
 class CEscenario
 {
-public:
-	CEscenario(){
-		matriz = new int*[filas];
-	}	
-	~CEscenario();
-	void generarMatriz(){
-		srand(time(NULL())); 
-		for (int i=0; i<filas; i++)
-		{
-			matriz[i]=new int[columnas];
-		}
-		
-		for (int i=0; i<filas; i++){
-			if(i==0 || j==0 || i=filas-1 || j=columnas-1)//bordes o bloques fijos
-				matriz[i][j]=1;
-			else
-			{	
-				if (i%2==0 && j%2==0)
-					matriz[i][j] = 1; 
-				else{
-					if ( (i==1 && (j==1||j==2)) || (j == 1 && i == 2) || (i==filas-2 && (j==columnas-3)||j == columnas-2)) || (i==filas-3 && j==columnas-2) )//Zona movible
-					{
-						matriz[i][j]=0;
-						else{
-							matriz[i][j] = rand()%2+2;
-						}		
-					}
-				}
-			}
-		}		
-	}
-	
-	void pintarBase (Graphics^g, Bitmap^bmpSolido, Bitmap^bmpDestruible){
-		for (int i=0; i<filas;i++)
-		{
-			X=0;
-			for(int j=0; j<columnas; j++)
-			{
-				if (matriz[i][j] == 1 || matriz[i][j] == 2)
-					g->DrawImage(bmpBase, X, Y, 50, 50);
-				X+=50;
-			}
-			Y+=50
-		}		
-	}
-	
-	void pintarMatriz (Graphics^g, Bitmap^bmpSolido, Bitmap^bmpDestruible){
-		for (int i=0; i<filas;i++)
-		{
-			X=0;
-			for(int j=0; j<columnas; j++)
-			{
-				if(matriz[i][j] == 1)
-					g->DrawImage(bmpSolido, X, Y, 50, 50);
-					
-				else if (matriz[i][j] == 3)
-					g->DrawImage(bmpDestruible, X, Y, 50, 50);
-				X+=50;
-			}
-			Y+=50
-		}		
-	}
-	
-	int **getMatriz(){
-		return matriz;
-	}
-	
 private:
-	int **matriz;
-	
+	int Ancho;
+	int Alto;
+	int Numero_Enemigos;
+	int Numero_Poderes;
+	int xSalida;
+	int ySalida;
+	vector<CEnemigo*> Enemigos;
+	vector<CMejora*> Poderes;
+
+public:
+
+	CEscenario();
+	~CEscenario();
+	void Leer_Mapa_unJugador(int** mapa, int n, CJugador* oJ);
+	void Leer_Mapa_DosJugadores(int** mapa, int n, CJugador* oJ1, CJugador* oJ2);
+	void Dibujar_Mapa(int** mapa, BufferedGraphics^ buffer, Bitmap^ Bsolido, Bitmap^ BDestructible, Bitmap^ BBorde, Bitmap^ BPasto);
+	int Get_NEnemigos();
+	int Get_NPoderes();
+	vector<CEnemigo*> Get_Enemigos();
+	vector<CMejora*> Get_Poderes();
+	int Get_XSalida();
+	int Get_YSalida();
+	CMejora* Get_Poder(int xM, int yM);
+	CEnemigo* Get_Enemigo(int xM, int yM);
 };
-
-
-
-/*
-		for (int i=0; i<filas; i++){
-			if(i==0 || j==0 || i=filas-1 || j=columnas-1)//bordes o bloques fijos
-				matriz[i][j]=1;
-			else if (i%2==0 && j%2==0)
-				matriz[i][j] = 1; 
-			else if ( (i==1 && (j==1||j==2)) || (j == 1 && i == 2) || (i==filas-2 && (j==columnas-3)||j == columnas-2)) || (i==filas-3 && j==columnas-2) )//Zona movible
-				matriz[i][j]=0;
-			else
-				matriz[i][j] = rand()%2+2;	
-		}		
-*/
 
 
